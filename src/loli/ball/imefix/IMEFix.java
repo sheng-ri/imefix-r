@@ -14,24 +14,24 @@ public final class IMEFix {
     }
 
     public void loadJarDll(String name)  {
-        var appData = System.getenv("APPDATA");
-        var lib = new File(appData, name);
+        var tmpDir = System.getenv("TMP");
+        var extractLib = new File(tmpDir, name);
         try (var in = IMEFix.class.getResourceAsStream("/" + name)) {
-            var data = in.readAllBytes();
+            var libData = in.readAllBytes();
             var valid = false;
-            if (lib.exists()) {
-                try (var libFile = new FileInputStream(lib)) {
-                    valid = Arrays.equals(data, libFile.readAllBytes());
+            if (extractLib.exists()) {
+                try (var libFile = new FileInputStream(extractLib)) {
+                    valid = Arrays.equals(libData, libFile.readNBytes(libData.length));
                 }
             }
             if (!valid) {
-                try (var out = new FileOutputStream(lib)) {
-                    out.write(data);
+                try (var out = new FileOutputStream(extractLib)) {
+                    out.write(libData);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.load(lib.getPath());
+        System.load(extractLib.getPath());
     }
 }
